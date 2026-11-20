@@ -11,7 +11,7 @@ export const home: HomeContent = {
   hero: {
     kicker: 'Estudiante de Ingeniería de Software en la UPC',
     statement: 'Construyo APIs con Java y Spring Boot, diseño interfaces en Figma, animo motion graphics y programo videojuegos en C#.',
-    status: 'Buscando práctica preprofesional en backend',
+    status: 'En camino a ser desarrollador full stack',
     place: 'Lima, Perú',
     scroll: 'Desliza para ver el trabajo',
     cta: 'Ver proyectos',
@@ -20,7 +20,7 @@ export const home: HomeContent = {
   about: {
     title: 'Sobre mí',
     statement:
-      'Estudio Ingeniería de Software en la UPC y egreso en 2027. Me interesa el backend: modelar datos, diseñar APIs y que la arquitectura se entienda. También diseño interfaces en Figma, hago motion graphics y videojuegos con equipos de arte y música. Aún no tengo experiencia laboral, así que aquí te muestro el trabajo: cada pantalla y cada cifra enlaza a su fuente.',
+      'Estudio Ingeniería de Software en la UPC y egreso en 2027. Quiero ser desarrollador full stack, con el backend como base: modelar datos, diseñar APIs y conectarlas con interfaces claras. También diseño interfaces en Figma, hago motion graphics y videojuegos con equipos de arte y música. Aún no tengo experiencia laboral, así que aquí te muestro el trabajo: cada pantalla y cada cifra enlaza a su fuente.',
     photoAlt: 'Omar Rivera de pie junto a un atril, con la bandera del Perú y un telón azul detrás.',
     stats: [
       { value: 17, label: 'endpoints REST que programé en DenunciaYa' },
@@ -29,7 +29,7 @@ export const home: HomeContent = {
       { value: 11, label: 'piezas de motion graphics en este sitio' },
     ],
     facts: [
-      { term: 'Busco', value: 'Práctica preprofesional en backend' },
+      { term: 'Objetivo', value: 'Crecer como desarrollador full stack' },
       { term: 'Ciclo', value: '2026-II, egreso en noviembre de 2027' },
       { term: 'Base', value: 'Lima, Perú. Abierto a trabajo remoto' },
       { term: 'Idiomas', value: 'Español nativo. Inglés intermedio (B1)' },
@@ -500,8 +500,8 @@ export const home: HomeContent = {
   },
   contact: {
     kicker: 'Contacto',
-    title: '¿Hablamos?',
-    text: 'Busco una práctica preprofesional en backend, en Lima o remota. Si tu equipo trabaja con Java o con .NET, me encantaría conversar.',
+    title: 'Contáctame',
+    text: 'Quiero crecer como desarrollador full stack: backend con Java y Spring Boot, frontend con Angular. Si tienes un proyecto, una idea o una oportunidad, escríbeme.',
   },
 };
 

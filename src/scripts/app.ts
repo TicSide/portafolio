@@ -6,6 +6,7 @@ import 'lenis/dist/lenis.css';
 import { initSurfaces } from './glass';
 import { initReels } from './reels';
 import { initTabs } from './tabs';
+import { initLangSwitch } from './lang';
 
 const root = document.documentElement;
 
@@ -17,17 +18,18 @@ function email(): void {
   }
 }
 
-/** Hora local de Lima, actualizada cada 20 segundos. */
-function clock(): void {
+/** Hora local de Lima, en el formato del idioma de la página. */
+function tickClock(): void {
   const els = document.querySelectorAll<HTMLElement>('[data-clock]');
   if (els.length === 0) return;
-  const format = new Intl.DateTimeFormat(root.lang || 'es-PE', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Lima' });
-  const tick = () => {
-    const now = format.format(new Date());
-    for (const el of els) el.textContent = now;
-  };
-  tick();
-  setInterval(tick, 20_000);
+  const now = new Intl.DateTimeFormat(root.lang || 'es-PE', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Lima' }).format(new Date());
+  for (const el of els) el.textContent = now;
+}
+
+/** Actualiza la hora cada 20 segundos. */
+function clock(): void {
+  tickClock();
+  setInterval(tickClock, 20_000);
 }
 
 /** Menú de pantalla completa en móvil. */
@@ -119,10 +121,12 @@ const surfaces = initSurfaces();
 
 // GSAP, Lenis y las animaciones van en su propio archivo y se piden después
 // del primer pintado: el contenido no espera por ellos.
+let motion: typeof import('./motion') | undefined;
 const loadMotion = () => {
   import('./motion')
-    .then(({ initMotion }) => {
-      initMotion(surfaces);
+    .then((module) => {
+      motion = module;
+      void module.initMotion(surfaces);
     })
     .catch(() => {
       // Sin animaciones el contenido sigue visible (ver los respaldos de global.css).
@@ -131,3 +135,19 @@ const loadMotion = () => {
     });
 };
 requestAnimationFrame(() => setTimeout(loadMotion, 0));
+
+// Cambio de idioma sin recargar: se revierten las animaciones, se copia el
+// texto de la otra versión y se vuelven a crear.
+initLangSwitch({
+  before: () => motion?.stopMotion(),
+  after: async () => {
+    email();
+    tickClock();
+    if (motion) await motion.initMotion(surfaces);
+  },
+  scrollTo: (y) => {
+    const lenis = motion?.getLenis();
+    if (lenis) lenis.scrollTo(y, { immediate: true, force: true });
+    else scrollTo({ top: y, behavior: 'instant' });
+  },
+});

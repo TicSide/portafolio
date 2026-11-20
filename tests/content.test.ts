@@ -115,8 +115,15 @@ describe('estructura de los casos de estudio', () => {
 
 describe('reglas de honestidad del contenido', () => {
   const banned = [/\bexpert[oa]?s?\b/i, /\bavanzad[oa]s?\b/i, /\bsenior\b/i, /\bfull[- ]?stack\b/i, /\d+\s?%/, /usuarios reales/i, /real users/i, /en producción/i, /in production/i, /lorem ipsum/i];
-  // Las únicas menciones permitidas son las que lo niegan.
-  const allowed = [/no está en producción ni tiene usuarios reales/i, /not in production and has no real users/i];
+  // Las únicas menciones permitidas son las que lo niegan y, para "full stack",
+  // las que lo plantean como meta y no como nivel actual.
+  const allowed = [
+    /no está en producción ni tiene usuarios reales/i,
+    /not in production and has no real users/i,
+    /(?:ser|crecer como) desarrollador full stack/i,
+    /(?:be|grow as|growing as) a full stack developer/i,
+    /on my way to full stack development/i,
+  ];
 
   it('no usa adjetivos de nivel ni porcentajes de habilidad', () => {
     for (const locale of locales) {

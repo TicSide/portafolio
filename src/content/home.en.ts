@@ -10,7 +10,7 @@ export const home: HomeContent = {
   hero: {
     kicker: 'Software engineering student at UPC',
     statement: 'I build APIs with Java and Spring Boot, design interfaces in Figma, animate motion graphics and write games in C#.',
-    status: 'Looking for a backend internship',
+    status: 'On my way to full stack development',
     place: 'Lima, Peru',
     scroll: 'Scroll to see the work',
     cta: 'See projects',
@@ -19,7 +19,7 @@ export const home: HomeContent = {
   about: {
     title: 'About',
     statement:
-      'I study software engineering at UPC and graduate in 2027. Backend is what I care about: modeling data, designing APIs and keeping the architecture easy to follow. I also design interfaces in Figma, make motion graphics and build games with art and music teammates. I have no work experience yet, so this site shows the work instead: every screen and every number links to its source.',
+      'I study software engineering at UPC and graduate in 2027. I want to be a full stack developer, with backend as my foundation: modeling data, designing APIs and connecting them to clear interfaces. I also design interfaces in Figma, make motion graphics and build games with art and music teammates. I have no work experience yet, so this site shows the work instead: every screen and every number links to its source.',
     photoAlt: 'Omar Rivera standing next to a lectern, with the Peruvian flag and a blue curtain behind him.',
     stats: [
       { value: 17, label: 'REST endpoints I wrote for DenunciaYa' },
@@ -28,7 +28,7 @@ export const home: HomeContent = {
       { value: 11, label: 'motion graphics pieces on this site' },
     ],
     facts: [
-      { term: 'Looking for', value: 'A backend internship' },
+      { term: 'Goal', value: 'Growing as a full stack developer' },
       { term: 'Term', value: '2026-II, graduating November 2027' },
       { term: 'Based in', value: 'Lima, Peru. Open to remote work' },
       { term: 'Languages', value: 'Spanish (native). English: intermediate (B1)' },
@@ -499,7 +499,7 @@ export const home: HomeContent = {
   },
   contact: {
     kicker: 'Contact',
-    title: 'Let’s talk',
-    text: 'I am looking for a backend internship in Lima or remote. If your team works with Java or .NET, I would love to talk.',
+    title: 'Contact me',
+    text: 'I want to grow as a full stack developer: backend with Java and Spring Boot, frontend with Angular. If you have a project, an idea or an opportunity, write to me.',
   },
 };

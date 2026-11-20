@@ -915,3 +915,14 @@ html {
     aspect-ratio: 16 / 9;
   }
 }
+
+/* Cambio de idioma sin recarga: fundido corto mientras se copia el texto. */
+@media (prefers-reduced-motion: no-preference) {
+  :is(.site-header, main, body > footer) {
+    transition: opacity 0.18s ease;
+  }
+}
+.is-switching :is(.site-header, main, body > footer) {
+  opacity: 0;
+  pointer-events: none;
+}
