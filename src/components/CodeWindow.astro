@@ -1,0 +1,23 @@
+---
+import { Code } from 'astro:components';
+import type { CodeExcerpt } from '@/content/types';
+import { codeTheme } from '@/lib/code-theme';
+import T from './T.astro';
+
+interface Props {
+  excerpt: CodeExcerpt;
+  linkLabel: string;
+  class?: string;
+}
+const { excerpt, linkLabel, class: className } = Astro.props;
+---
+
+<figure class:list={['code', className]}>
+  <div class="code__bar">
+    <span aria-hidden="true" class="frame__dots"><span></span><span></span><span></span></span>
+    <span>{excerpt.file}</span>
+    {excerpt.href && <a href={excerpt.href} rel="noopener noreferrer">{linkLabel}<span class="sr-only">: {excerpt.file}</span></a>}
+  </div>
+  <Code code={excerpt.code} lang={excerpt.lang} theme={codeTheme} />
+  <figcaption class="code__caption"><T text={excerpt.caption} /></figcaption>
+</figure>

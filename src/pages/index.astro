@@ -1,0 +1,24 @@
+---
+// La raíz redirige al idioma por defecto. En Vercel y Netlify la redirección
+// se hace además a nivel de servidor (vercel.json y public/_redirects).
+import { defaultLocale, homePath, locales, htmlLang } from '@/i18n/utils';
+import { site } from '@/config/site';
+const target = homePath(defaultLocale);
+---
+
+<!doctype html>
+<html lang={htmlLang[defaultLocale]}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{site.name}</title>
+    <meta http-equiv="refresh" content={`0; url=${target}`} />
+    <link rel="canonical" href={new URL(target, Astro.site)} />
+    <meta name="robots" content="noindex, follow" />
+  </head>
+  <body>
+    <ul>
+      {locales.map((locale) => <li><a href={homePath(locale)} hreflang={locale}>{site.name} ({locale})</a></li>)}
+    </ul>
+  </body>
+</html>

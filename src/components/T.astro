@@ -1,0 +1,10 @@
+---
+/** Texto con marcadores "[POR CONFIRMAR: …]" resaltados. */
+import { renderPending } from '@/i18n/utils';
+interface Props {
+  text: string;
+}
+const { text } = Astro.props;
+---
+
+<Fragment set:html={renderPending(text)} />
