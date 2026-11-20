@@ -86,13 +86,13 @@ function heroScroll(surfaces: Map<HTMLCanvasElement, Surface>): void {
   if (!name || !once(name)) return;
   const rotY = gsap.quickTo(name, 'rotationY', { duration: 1.2, ease: 'power3.out' });
   const rotX = gsap.quickTo(name, 'rotationX', { duration: 1.2, ease: 'power3.out' });
-  hero.addEventListener('pointermove', (event) => {
+  on(hero, 'pointermove', (event) => {
     const x = event.clientX / innerWidth - 0.5;
     const y = event.clientY / innerHeight - 0.5;
     rotY(x * 7);
     rotX(-y * 5);
   });
-  hero.addEventListener('pointerleave', () => {
+  on(hero, 'pointerleave', () => {
     rotY(0);
     rotX(0);
   });
@@ -118,10 +118,12 @@ function marquee(): void {
         skewTo(gsap.utils.clamp(-8, 8, v / -300));
       },
     });
-    ScrollTrigger.addEventListener('scrollEnd', () => {
+    const settle = () => {
       gsap.to(loop, { timeScale: 1, duration: 0.6 });
       skewTo(0);
-    });
+    };
+    ScrollTrigger.addEventListener('scrollEnd', settle);
+    run.signal.addEventListener('abort', () => ScrollTrigger.removeEventListener('scrollEnd', settle));
   }
 }
 
@@ -354,7 +356,7 @@ function filmstrip(): void {
     );
   }
   // El foco del teclado dentro de la tira lleva el scroll hasta esa imagen.
-  track.addEventListener('focusin', (event) => {
+  on(track, 'focusin', (event) => {
     const frame = (event.target as HTMLElement).closest<HTMLElement>('.film__frame');
     const st = tween.scrollTrigger;
     if (!frame || !st) return;
@@ -466,7 +468,7 @@ function blobsFollow(): void {
   if (!section || !glow || !finePointer || !once(section)) return;
   const x = gsap.quickTo(glow, 'x', { duration: 2.2, ease: 'power3.out' });
   const y = gsap.quickTo(glow, 'y', { duration: 2.2, ease: 'power3.out' });
-  section.addEventListener('pointermove', (event) => {
+  on(section, 'pointermove', (event) => {
     x((event.clientX / innerWidth - 0.5) * 120);
     y((event.clientY / innerHeight - 0.5) * 80);
   });
@@ -477,7 +479,7 @@ function contactTitle(): void {
   if (!title || !finePointer || !once(title)) return;
   const chars = gsap.utils.toArray<HTMLElement>('.contact__char', title);
   const section = title.closest<HTMLElement>('.contact');
-  section?.addEventListener('pointermove', (event) => {
+  on(section, 'pointermove', (event) => {
     for (const char of chars) {
       const rect = char.getBoundingClientRect();
       const dx = event.clientX - (rect.left + rect.width / 2);
@@ -487,7 +489,7 @@ function contactTitle(): void {
       char.style.fontWeight = String(Math.round(w));
     }
   });
-  section?.addEventListener('pointerleave', () => {
+  on(section, 'pointerleave', () => {
     for (const char of chars) char.style.fontWeight = '';
   });
 }
@@ -498,12 +500,12 @@ function magnetic(): void {
     if (!once(el)) continue;
     const x = gsap.quickTo(el, 'x', { duration: 0.6, ease: 'power3.out' });
     const y = gsap.quickTo(el, 'y', { duration: 0.6, ease: 'power3.out' });
-    el.addEventListener('pointermove', (event) => {
+    on(el, 'pointermove', (event) => {
       const rect = el.getBoundingClientRect();
       x((event.clientX - rect.left - rect.width / 2) * 0.3);
       y((event.clientY - rect.top - rect.height / 2) * 0.4);
     });
-    el.addEventListener('pointerleave', () => {
+    on(el, 'pointerleave', () => {
       x(0);
       y(0);
     });
@@ -517,12 +519,12 @@ function tilt(): void {
     gsap.set(el, { transformPerspective: 900 });
     const rx = gsap.quickTo(el, 'rotationX', { duration: 0.8, ease: 'power3.out' });
     const ry = gsap.quickTo(el, 'rotationY', { duration: 0.8, ease: 'power3.out' });
-    el.addEventListener('pointermove', (event) => {
+    on(el, 'pointermove', (event) => {
       const rect = el.getBoundingClientRect();
       ry(((event.clientX - rect.left) / rect.width - 0.5) * 6);
       rx(-((event.clientY - rect.top) / rect.height - 0.5) * 6);
     });
-    el.addEventListener('pointerleave', () => {
+    on(el, 'pointerleave', () => {
       rx(0);
       ry(0);
     });
@@ -544,8 +546,21 @@ function smoothScroll(): void {
   });
 }
 
-/** Evita registrar dos veces la misma escucha si matchMedia vuelve a ejecutar el bloque. */
-const bound = new WeakSet<Element>();
+/**
+ * Cada ejecución del bloque de matchMedia tiene su propio AbortController: al
+ * revertirse (cambio de consulta o de idioma) se quitan todas sus escuchas.
+ */
+let run = new AbortController();
+function on<K extends keyof HTMLElementEventMap>(
+  target: HTMLElement | null | undefined,
+  type: K,
+  listener: (event: HTMLElementEventMap[K]) => void,
+): void {
+  target?.addEventListener(type, listener, { signal: run.signal });
+}
+
+/** Evita registrar dos veces la misma escucha dentro de una misma ejecución. */
+let bound = new WeakSet<Element>();
 function once(el: Element): boolean {
   if (bound.has(el)) return false;
   bound.add(el);
@@ -559,8 +574,27 @@ function yieldToMain(): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, 0));
 }
 
-export function initMotion(surfaces: Map<HTMLCanvasElement, Surface>): void {
-  const mm = gsap.matchMedia();
+let mm: gsap.MatchMedia | undefined;
+
+/** Lenis, si está activo (para recolocar el scroll al cambiar de idioma). */
+export function getLenis(): Lenis | undefined {
+  return lenis;
+}
+
+/** Revierte todas las animaciones y quita sus escuchas. El DOM vuelve al HTML original. */
+export function stopMotion(): void {
+  mm?.revert();
+  mm = undefined;
+}
+
+/** Arranca el movimiento. La promesa resuelve cuando todo está creado y medido. */
+export function initMotion(surfaces: Map<HTMLCanvasElement, Surface>): Promise<void> {
+  stopMotion();
+  let ready: () => void = () => {};
+  const done = new Promise<void>((resolve) => {
+    ready = resolve;
+  });
+  mm = gsap.matchMedia();
   mm.add(
     {
       motion: '(prefers-reduced-motion: no-preference)',
@@ -568,10 +602,13 @@ export function initMotion(surfaces: Map<HTMLCanvasElement, Surface>): void {
     },
     (context) => {
       const { motion, desktop } = context.conditions as { motion: boolean; desktop: boolean };
+      run = new AbortController();
+      bound = new WeakSet();
       if (!motion) {
         root.classList.remove('js-motion', 'js-intro');
         document.querySelector('.intro')?.remove();
         onReady();
+        ready();
         return;
       }
       // Primero lo que se ve al cargar: scroll, temas, hero e intro.
@@ -622,10 +659,14 @@ export function initMotion(surfaces: Map<HTMLCanvasElement, Surface>): void {
           ScrollTrigger.refresh();
         });
         onReady();
+        ready();
       })();
+      const controller = run;
       return () => {
         cancelled = true;
+        controller.abort();
       };
     },
   );
+  return done;
 }
