@@ -1,0 +1,68 @@
+---
+import type { Locale } from '@/i18n/utils';
+import { ui } from '@/i18n/ui';
+import { site } from '@/config/site';
+import Icon from './Icon.astro';
+interface Props {
+  locale: Locale;
+  full?: boolean;
+}
+const { locale, full = false } = Astro.props;
+const t = ui[locale];
+const cv = site.cv[locale];
+---
+
+<ul class="actions">
+  <li>
+    {
+      site.email ? (
+        <a class="btn btn--solid" href="#contacto" data-email-user={site.email.user} data-email-domain={site.email.domain} data-magnetic>
+          {t.cta.contact}
+        </a>
+      ) : (
+        <span class="btn btn--pending">
+          {t.cta.email} <mark class="pending">[{t.pending}]</mark>
+        </span>
+      )
+    }
+  </li>
+  <li>
+    <a class="btn" href={site.github} rel="noopener noreferrer me" data-magnetic>
+      <span class="btn__icon"><Icon name="github" /></span>
+      {t.cta.github}
+    </a>
+  </li>
+  {
+    full && (
+      <li>
+        {site.linkedin ? (
+          <a class="btn" href={site.linkedin} rel="noopener noreferrer me" data-magnetic>{t.cta.linkedin}</a>
+        ) : (
+          <span class="btn btn--pending">
+            {t.cta.linkedin} <mark class="pending">[{t.pending}]</mark>
+          </span>
+        )}
+      </li>
+    )
+  }
+  {
+    full && (
+      <li>
+        <a class="btn" href={site.itch} rel="noopener noreferrer me" data-magnetic>{t.cta.itch}</a>
+      </li>
+    )
+  }
+  {
+    full && (
+      <li>
+        {cv ? (
+          <a class="btn" href={cv} download data-magnetic>{t.cta.cv}</a>
+        ) : (
+          <span class="btn btn--pending">
+            {t.cta.cv} <mark class="pending">[{t.pending}]</mark>
+          </span>
+        )}
+      </li>
+    )
+  }
+</ul>

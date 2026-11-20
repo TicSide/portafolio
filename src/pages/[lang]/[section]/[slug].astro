@@ -1,0 +1,264 @@
+---
+import { fitWidths } from '@/lib/images';
+import { fitWordsStyle } from '@/lib/fit';
+import { Picture } from 'astro:assets';
+import Base from '@/layouts/Base.astro';
+import T from '@/components/T.astro';
+import Shot from '@/components/Shot.astro';
+import Arrow from '@/components/Arrow.astro';
+import CodeWindow from '@/components/CodeWindow.astro';
+import { caseStudies } from '@/content';
+import { media, pixelArt } from '@/content/media';
+import type { CaseStudy } from '@/content/types';
+import { ui } from '@/i18n/ui';
+import { homePath, htmlLang, locales, projectPath, projectSegment, type Locale } from '@/i18n/utils';
+import { site } from '@/config/site';
+
+export function getStaticPaths() {
+  return locales.flatMap((lang) =>
+    caseStudies[lang].map((study, index, all) => ({
+      params: { lang, section: projectSegment[lang], slug: study.slug },
+      props: { study, next: all[(index + 1) % all.length] },
+    })),
+  );
+}
+
+interface Props {
+  study: CaseStudy;
+  next: CaseStudy;
+}
+const { study, next } = Astro.props;
+const locale = Astro.params.lang as Locale;
+const t = ui[locale];
+const origin = Astro.site!;
+const url = new URL(projectPath(locale, study.slug), origin).href;
+const author = { '@type': 'Person', '@id': new URL('/#person', origin).href, name: site.name };
+const schemaType = { software: 'SoftwareSourceCode', game: 'VideoGame', research: 'CreativeWork' }[study.kind];
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': schemaType,
+    name: study.title,
+    description: study.seoDescription,
+    url,
+    inLanguage: htmlLang[locale],
+    ...(study.cover ? { image: new URL(media[study.cover].src, origin).href } : {}),
+    ...(study.kind === 'software' ? { author, codeRepository: study.repo, programmingLanguage: study.language } : { contributor: author }),
+    ...(study.kind === 'game' ? { gamePlatform: 'Windows', genre: ['Action', 'Adventure'], url: 'https://tic-side.itch.io/yupachayna' } : {}),
+    keywords: study.stack.join(', '),
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: site.shortName, item: new URL(homePath(locale), origin).href },
+      { '@type': 'ListItem', position: 2, name: study.title, item: url },
+    ],
+  },
+];
+
+const sections = [
+  ['problema', t.case.problem],
+  ['aporte', t.case.mine],
+  ['tecnologias', t.case.tech],
+  ['estructura', t.case.structure],
+  ['decisiones', t.case.decisions],
+  ['retos', t.case.challenges],
+  ['aprendizajes', t.case.learned],
+  ...(study.gallery.length ? [['imagenes', t.case.gallery]] : []),
+  ...(study.code ? [['codigo', t.case.code]] : []),
+  ['evidencia', t.case.evidence],
+] as const;
+---
+
+<Base locale={locale} title={`${study.title}. ${site.shortName}`} description={study.seoDescription} ogType="article" jsonLd={jsonLd}>
+  <article>
+    <header class="case-hero theme-dark" data-theme-section="dark">
+      {
+        study.cover && (
+          <div class:list={['case-hero__media', { pixel: pixelArt.has(study.cover) }]} aria-hidden="true">
+            <Picture src={media[study.cover]} alt="" formats={['avif', 'webp']} widths={fitWidths(media[study.cover], [800, 1400, 2000])} sizes="100vw" loading="eager" />
+          </div>
+        )
+      }
+      <div class="wrap case-hero__inner">
+        <a class="back-link" href={`${homePath(locale)}#trabajo`}>
+          <span style="display:inline-block; width:1rem; rotate:180deg"><Arrow /></span>{t.case.back}
+        </a>
+        <p class="kicker">{t.status[study.status]}, <T text={study.period} /></p>
+        <h1 class="title-xl fit-words" data-split style={fitWordsStyle(study.title)}>{study.title}</h1>
+        <p class="lede"><T text={study.summary} /></p>
+        <ul class="chips">{study.stack.map((item) => <li class="chip">{item}</li>)}</ul>
+      </div>
+    </header>
+
+    <div class="section theme-dark" data-theme-section="dark" style="padding-top: var(--s-8)">
+      <div class="wrap case-layout">
+        <nav class="toc" aria-labelledby="toc-title">
+          <p class="kicker" id="toc-title">{t.case.contents}</p>
+          <ol>{sections.map(([id, label]) => <li><a href={`#${id}`}>{label}</a></li>)}</ol>
+        </nav>
+
+        <div>
+          <section class="case-section" id="problema" aria-labelledby="h-problema">
+            <h2 id="h-problema">{t.case.problem}</h2>
+            <p class="case-key"><T text={study.problem} /></p>
+            <h3 class="kicker" style="margin-top: var(--s-6)">{t.case.goal}</h3>
+            <p style="margin-top: var(--s-3)"><T text={study.goal} /></p>
+          </section>
+
+          <section class="case-section" id="aporte" aria-labelledby="h-aporte">
+            <h2 id="h-aporte">{t.case.mine}</h2>
+            <div class="split-credit" style="margin-top: 0; padding-top: 0; border-top: 0">
+              <div>
+                <h3>{t.myPart}</h3>
+                <ul class="credit-list">{study.mine.map((item) => <li><T text={item} /></li>)}</ul>
+              </div>
+              <div>
+                <h3>{t.case.team}</h3>
+                <ul class="credit-list credit-list--team">{study.team.map((item) => <li><T text={item} /></li>)}</ul>
+              </div>
+            </div>
+          </section>
+
+          <section class="case-section" id="tecnologias" aria-labelledby="h-tecnologias">
+            <h2 id="h-tecnologias">{t.case.tech}</h2>
+            <ul class="chips">{study.tech.map((item) => <li class="chip"><T text={item} /></li>)}</ul>
+          </section>
+
+          <section class="case-section" id="estructura" aria-labelledby="h-estructura">
+            <h2 id="h-estructura">{t.case.structure}</h2>
+            {
+              study.kind === 'software' ? (
+                <div class="arch" style="margin-top: 0">
+                  <div class="iso" aria-hidden="true">
+                    <div class="iso__stack">
+                      {study.structure.layers.map((layer, i) => (
+                        <div class:list={['iso__layer', `iso__layer--${study.structure.layers.length - 1 - i}`, { 'iso__layer--mine': layer.mine }]}>
+                          <span class="iso__name">{layer.name}</span>
+                          {layer.note && <span class="iso__note">{layer.note}</span>}
+                        </div>
+                      ))}
+                      <span class="iso__packet" />
+                    </div>
+                  </div>
+                  <div>
+                    <p class="muted" style="margin-bottom: var(--s-5)"><T text={study.structure.caption} /></p>
+                    <ul class="arch__list">
+                      {study.structure.layers.map((layer) => (
+                        <li class="arch__row">
+                          <code>{layer.name}</code>
+                          <span><T text={layer.items.join(', ')} /></span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <p class="muted" style="margin-bottom: var(--s-5)"><T text={study.structure.caption} /></p>
+                  <ul class="arch__list">
+                    {study.structure.layers.map((layer) => (
+                      <li class="arch__row">
+                        <span style="color: var(--fg); font-weight: 600">
+                          {layer.name}
+                          {layer.mine && <span class="mine-tag" style="margin-left: var(--s-2)">{locale === 'es' ? 'mío' : 'mine'}</span>}
+                        </span>
+                        <span><T text={layer.items.join(', ')} /></span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )
+            }
+          </section>
+
+          <section class="case-section" id="decisiones" aria-labelledby="h-decisiones">
+            <h2 id="h-decisiones">{t.case.decisions}</h2>
+            {
+              study.decisions.map((decision) => (
+                <div class="decision" data-reveal>
+                  <p class="decision__what">
+                    <span>{t.case.chose}</span> <T text={decision.chose} /> <span>{t.case.over}</span> <T text={decision.over} />.
+                  </p>
+                  <p><T text={decision.why} /></p>
+                </div>
+              ))
+            }
+          </section>
+
+          <section class="case-section" id="retos" aria-labelledby="h-retos">
+            <h2 id="h-retos">{t.case.challenges}</h2>
+            <dl class="qa">
+              {
+                study.challenges.map((item) => (
+                  <div>
+                    <dt><T text={item.what} /></dt>
+                    <dd><T text={item.how} /></dd>
+                  </div>
+                ))
+              }
+            </dl>
+          </section>
+
+          <section class="case-section" id="aprendizajes" aria-labelledby="h-aprendizajes">
+            <h2 id="h-aprendizajes">{t.case.learned}</h2>
+            <ul class="credit-list">{study.learned.map((item) => <li><T text={item} /></li>)}</ul>
+          </section>
+
+          {
+            study.gallery.length > 0 && (
+              <section class="case-section" id="imagenes" aria-labelledby="h-imagenes">
+                <h2 id="h-imagenes">{t.case.gallery}</h2>
+                <div class="gallery">
+                  {study.gallery.map((shot, i) => (
+                    <div data-reveal>
+                      <Shot shot={shot} sizes={i === 0 ? '(min-width: 64rem) 66vw, 92vw' : '(min-width: 64rem) 33vw, 92vw'} />
+                    </div>
+                  ))}
+                </div>
+                <p class="note" style="margin-top: var(--s-5)">{t.mineLegend}</p>
+              </section>
+            )
+          }
+
+          {
+            study.code && (
+              <section class="case-section" id="codigo" aria-labelledby="h-codigo">
+                <h2 id="h-codigo">{t.case.code}</h2>
+                <CodeWindow excerpt={study.code} linkLabel={t.viewCode} />
+              </section>
+            )
+          }
+
+          <section class="case-section" id="evidencia" aria-labelledby="h-evidencia">
+            <h2 id="h-evidencia">{t.case.evidence}</h2>
+            <ul class="credit-list credit-list--team">{study.evidence.map((item) => <li><T text={item} /></li>)}</ul>
+            <h3 class="kicker" style="margin-top: var(--s-6)">{t.case.links}</h3>
+            {
+              study.links.length > 0 ? (
+                <ul class="chips" style="margin-top: var(--s-3)">
+                  {study.links.map((link) => (
+                    <li>
+                      <a class="chip" href={link.href} rel="noopener noreferrer">{link.label}</a>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p style="margin-top: var(--s-3)">{t.case.noLinks}</p>
+              )
+            }
+          </section>
+        </div>
+      </div>
+
+      <div class="wrap">
+        <a class="next-project" href={projectPath(locale, next.slug)} data-cursor={t.viewImage}>
+          <span class="kicker">{t.case.next}</span>
+          <span class="next-project__title fit-words" style={fitWordsStyle(next.title)}>{next.title}</span>
+          <span class="muted"><T text={next.summary} /></span>
+        </a>
+      </div>
+    </div>
+  </article>
+</Base>

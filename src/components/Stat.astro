@@ -1,0 +1,21 @@
+---
+import type { Stat } from '@/content/types';
+interface Props {
+  stat: Stat;
+  locale: string;
+}
+const { stat, locale } = Astro.props;
+const plain = stat.value >= 1900 && stat.value <= 2100;
+// Mismo agrupamiento que el texto del contenido: espacio fijo en español
+// ("2 498 de 2 503") y coma en inglés ("2,498 of 2,503").
+const sep = locale.startsWith('es') ? '\u00a0' : ',';
+const display = plain ? String(stat.value) : String(stat.value).replace(/\B(?=(\d{3})+(?!\d))/g, sep);
+---
+
+<div class="stat">
+  <p class="stat__value">
+    <span data-count={stat.value} data-sep={sep} data-plain={plain ? 'true' : undefined}>{display}</span>
+    {stat.suffix && <span class="stat__suffix">{stat.suffix}</span>}
+  </p>
+  <p class="stat__label">{stat.label}</p>
+</div>

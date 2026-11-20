@@ -1,0 +1,21 @@
+---
+import Base from '@/layouts/Base.astro';
+import { ui } from '@/i18n/ui';
+import { homePath } from '@/i18n/utils';
+const es = ui.es.notFound;
+const en = ui.en.notFound;
+---
+
+<Base locale="es" title={`404. ${es.title}`} description={es.text} noindex>
+  <section class="section theme-dark" data-theme-section="dark">
+    <div class="wrap notfound">
+      <p class="kicker">404</p>
+      <h1 class="title-xl">{es.title}</h1>
+      <p class="lede">{es.text}</p>
+      <p><a class="btn btn--solid" href={homePath('es')}>{es.home}</a></p>
+      <div lang="en" style="margin-top: var(--s-6)">
+        <p class="muted"><strong>{en.title}.</strong> {en.text} <a href={homePath('en')} hreflang="en">{en.home}</a></p>
+      </div>
+    </div>
+  </section>
+</Base>

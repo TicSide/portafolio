@@ -1,0 +1,50 @@
+---
+import { alternatePath, homePath, type Locale } from '@/i18n/utils';
+import { ui } from '@/i18n/ui';
+import { site } from '@/config/site';
+interface Props {
+  locale: Locale;
+  isHome: boolean;
+}
+const { locale, isHome } = Astro.props;
+const t = ui[locale];
+const other: Locale = locale === 'es' ? 'en' : 'es';
+const base = isHome ? '' : homePath(locale);
+const links = [
+  ['#trabajo', t.nav.work],
+  ['#motion', t.nav.motion],
+  ['#diseno', t.nav.design],
+  ['#sobre-mi', t.nav.about],
+  ['#trayectoria', t.nav.journey],
+  ['#contacto', t.nav.contact],
+] as const;
+---
+
+<header class="site-header">
+  <div class="wrap site-header__row">
+    <a class="brand" href={homePath(locale)} aria-label={`${site.name}, ${locale === 'es' ? 'inicio' : 'home'}`}>
+      <svg class="brand__mark" viewBox="0 0 40 40" aria-hidden="true">
+        <path d="M20 2 38 20 20 38 2 20Z" fill="none" stroke="currentColor" stroke-width="1.6"></path>
+        <path d="M20 11 29 20 20 29 11 20Z" fill="currentColor"></path>
+      </svg>
+      <span>{site.shortName}</span>
+    </a>
+    <nav class="nav" aria-label={t.navLabel}>
+      <ul>
+        {links.map(([hash, label]) => <li><a href={`${base}${hash}`}>{label}</a></li>)}
+      </ul>
+    </nav>
+    <a class="lang" href={alternatePath(Astro.url.pathname, other)} hreflang={other} lang={other}>{t.langSwitch}</a>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="menu">
+      <span class="menu-toggle__bars" aria-hidden="true"><span></span><span></span></span>
+      <span class="menu-toggle__label">{t.menu}</span>
+    </button>
+  </div>
+</header>
+<div class="menu" id="menu">
+  <nav aria-label={t.navLabel}>
+    <ul>
+      {links.map(([hash, label]) => <li><a href={`${base}${hash}`}>{label}</a></li>)}
+    </ul>
+  </nav>
+</div>

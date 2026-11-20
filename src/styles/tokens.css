@@ -1,0 +1,136 @@
+/* Design tokens: color, tipografía, espacios y movimiento. */
+:root {
+  /* Paleta "noche andina": azul de noche, luz cobalto y un destello dorado */
+  --night: #070d26;
+  --night-2: #0c1638;
+  --night-3: #16224f;
+  --cobalt: #3a5bff;
+  --peri: #a8b8ff;
+  --ice: #edf1ff;
+  --ice-2: #dde4fb;
+  --ice-3: #c9d3f5;
+  --ink: #0a1236;
+  --slate: #48547c;
+  --gold: #f5b83d;
+  --gold-ink: #7d5200;
+  /* Acentos de color: uno por pieza o sección. El dorado sigue siendo «lo mío». */
+  --pink: #ff5ca8;
+  --violet: #9b7bff;
+  --lime: #d4ff3a;
+  --mint: #3fe0b8;
+  --orange: #ff7a45;
+  --sky: #4cc9ff;
+  --cobalt-2: #6f8bff;
+  --ink-2: #0b0a12;
+  --cream: #f6efe4;
+  --cream-ink: #1f1424;
+  --spectrum: linear-gradient(90deg, #ff5ca8, #9b7bff 30%, #4cc9ff 55%, #3fe0b8 75%, #d4ff3a);
+  --pending-bg: #fbefd3;
+  --pending-fg: #6f4800;
+
+  /* Colores de métodos HTTP (convención de Swagger, en tono apagado) */
+  --get: #6f9bff;
+  --post: #4fd1a0;
+  --put: #f5b83d;
+  --patch: #c39bff;
+  --delete: #ff7a8a;
+
+  /* Tipografía */
+  --font-display: 'Bricolage Grotesque Variable', 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-text: 'Manrope Variable', 'Manrope', system-ui, sans-serif;
+  --font-serif: 'Instrument Serif', 'Times New Roman', serif;
+  --font-code: 'Geist Mono Variable', 'Geist Mono', ui-monospace, 'SFMono-Regular', monospace;
+
+  --t-xs: 0.8125rem;
+  --t-sm: 0.9375rem;
+  --t-md: 1.0625rem;
+  --t-lg: clamp(1.2rem, 1.05rem + 0.6vw, 1.5rem);
+  --t-xl: clamp(1.55rem, 1.15rem + 1.5vw, 2.35rem);
+  --t-2xl: clamp(2.1rem, 1.3rem + 3.2vw, 4.1rem);
+  --t-3xl: clamp(3rem, 1.3rem + 7vw, 8.5rem);
+  --t-mega: clamp(4rem, 0.6rem + 15vw, 17.5rem);
+
+  /* Espaciado */
+  --s-1: 0.25rem;
+  --s-2: 0.5rem;
+  --s-3: 0.75rem;
+  --s-4: 1rem;
+  --s-5: 1.5rem;
+  --s-6: 2rem;
+  --s-7: 3rem;
+  --s-8: 4.5rem;
+  --s-9: 7rem;
+  --s-10: 10rem;
+
+  --page: 92rem;
+  --gutter: clamp(1.25rem, 4.5vw, 4rem);
+  --measure: 62ch;
+
+  --r-sm: 8px;
+  --r-md: 16px;
+  --r-lg: 28px;
+  --r-pill: 999px;
+
+  /* Movimiento */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --d-fast: 180ms;
+  --d-base: 450ms;
+  --d-slow: 900ms;
+}
+
+/* Variables semánticas por tema. El tema activo lo cambia el scroll. */
+:root,
+[data-theme='dark'] {
+  --bg: var(--night);
+  --bg-raised: var(--night-2);
+  --fg: var(--ice);
+  --muted: var(--peri);
+  --line: rgba(168, 184, 255, 0.18);
+  --line-strong: rgba(168, 184, 255, 0.36);
+  --mine: var(--gold);
+  --accent: var(--peri);
+  --card: rgba(22, 34, 79, 0.55);
+  --code-bg: #060b20;
+}
+
+[data-theme='light'] {
+  --bg: var(--ice);
+  --bg-raised: #ffffff;
+  --fg: var(--ink);
+  --muted: var(--slate);
+  --line: rgba(10, 18, 54, 0.14);
+  --line-strong: rgba(10, 18, 54, 0.3);
+  --mine: var(--gold-ink);
+  --accent: #2742d8;
+  --card: #ffffff;
+  --code-bg: #060b20;
+}
+
+/* Motion: casi negro, para que el color de los videos mande */
+[data-theme='ink'] {
+  --bg: var(--ink-2);
+  --bg-raised: #15131f;
+  --fg: #f4f2fa;
+  --muted: #b7b2cc;
+  --line: rgba(244, 242, 250, 0.14);
+  --line-strong: rgba(244, 242, 250, 0.3);
+  --mine: var(--gold);
+  --accent: var(--lime);
+  --card: rgba(255, 255, 255, 0.04);
+  --code-bg: #060b20;
+}
+
+/* Diseño: crema cálida, como el papel de un moodboard */
+[data-theme='cream'] {
+  --bg: var(--cream);
+  --bg-raised: #fffaf2;
+  --fg: var(--cream-ink);
+  --muted: #5c4d5f;
+  --line: rgba(31, 20, 36, 0.14);
+  --line-strong: rgba(31, 20, 36, 0.3);
+  --mine: var(--gold-ink);
+  --accent: #c2186b;
+  --card: #fffaf2;
+  --code-bg: #060b20;
+}

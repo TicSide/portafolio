@@ -1,0 +1,43 @@
+---
+/**
+ * Tarjeta de una pieza de motion. Muestra el póster; con el cursor encima (o al
+ * entrar en pantalla en táctil) reproduce un fragmento de 6 s sin sonido, y al
+ * hacer clic abre el video completo en el reproductor (ver src/scripts/reels.ts).
+ */
+import type { MotionPiece } from '@/content/types';
+
+interface Props {
+  piece: MotionPiece;
+  play: string;
+  featured?: boolean;
+  compact?: boolean;
+  /** Botón pequeño con póster en miniatura, para dentro de una tarjeta. */
+  inline?: boolean;
+}
+const { piece, play, featured = false, compact = false, inline = false } = Astro.props;
+const poster = `/motion/${piece.slug}.webp`;
+---
+
+<button
+  type="button"
+  class:list={['reel', { 'reel--featured': featured, 'reel--compact': compact, 'reel--inline': inline, 'reel--vertical': piece.vertical }]}
+  style={`--accent: var(--${piece.accent})`}
+  data-reel={piece.slug}
+  data-title={piece.title}
+  data-vertical={piece.vertical ? 'true' : undefined}
+  data-cursor={play}
+>
+  <span class="reel__media">
+    <img class="reel__poster" src={poster} alt="" width={piece.vertical ? 540 : 960} height={piece.vertical ? 960 : 540} loading="lazy" decoding="async" />
+    <video class="reel__loop" muted loop playsinline preload="none" aria-hidden="true" tabindex="-1" data-src={`/motion/${piece.slug}-loop.mp4`}></video>
+    <span class="reel__play" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="currentColor"></path></svg>
+    </span>
+    <span class="reel__time mono" aria-hidden="true">{piece.duration}</span>
+  </span>
+  <span class="reel__meta">
+    <span class="reel__title">{piece.title}</span>
+    <span class="reel__kind">{piece.kind}</span>
+  </span>
+  <span class="sr-only">{play}, {piece.duration}</span>
+</button>

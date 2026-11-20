@@ -1,0 +1,35 @@
+{
+  "name": "portafolio-omar-rivera",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "lint": "astro check",
+    "test": "vitest run",
+    "pending": "node scripts/pending.mjs",
+    "check:links": "node scripts/check-links.mjs",
+    "validate": "npm run lint && npm run test && npm run build && npm run check:links"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.5",
+    "@fontsource-variable/bricolage-grotesque": "^5.3.0",
+    "@fontsource-variable/geist-mono": "^5.3.0",
+    "@fontsource-variable/manrope": "^5.3.0",
+    "@fontsource/instrument-serif": "^5.3.0",
+    "astro": "^7.4.12",
+    "gsap": "^3.15.1",
+    "lenis": "^1.3.27"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.12",
+    "simple-icons": "^16.38.0",
+    "typescript": "^6.0.3",
+    "vitest": "^5.1.0"
+  }
+}

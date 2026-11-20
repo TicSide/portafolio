@@ -1,0 +1,18 @@
+---
+import type { Locale } from '@/i18n/utils';
+import { ui } from '@/i18n/ui';
+import { site } from '@/config/site';
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const t = ui[locale];
+---
+
+<footer class="site-footer theme-dark">
+  <div class="wrap site-footer__row">
+    <p>© 2026 {site.name}. {site.location}.</p>
+    <p>{t.footer.built}</p>
+    <a href="#contenido">{t.footer.top}</a>
+  </div>
+</footer>

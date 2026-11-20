@@ -1,0 +1,52 @@
+---
+import { Picture } from 'astro:assets';
+import { media, pixelArt } from '@/content/media';
+import type { Shot } from '@/content/types';
+import T from './T.astro';
+
+interface Props {
+  shot: Shot;
+  /** sizes del <img> responsivo. */
+  sizes?: string;
+  caption?: boolean;
+  eager?: boolean;
+  class?: string;
+}
+const { shot, sizes = '(min-width: 64rem) 60vw, 92vw', caption = true, eager = false, class: className } = Astro.props;
+const image = media[shot.image];
+const isPixel = pixelArt.has(shot.image);
+const widths = [480, 800, 1200, 1600, 2000].filter((w) => w <= image.width);
+---
+
+<figure class:list={['shot', className]}>
+  <div class:list={['frame', { 'frame--plain': shot.frame === 'plain', pixel: isPixel }]} data-cursor-host>
+    {
+      shot.frame !== 'plain' && (
+        <div class="frame__bar" aria-hidden="true">
+          <span class="frame__dots"><span /><span /><span /></span>
+          <span class="frame__url">{shot.url}</span>
+        </div>
+      )
+    }
+    <div class="frame__media">
+      <Picture
+        src={image}
+        alt={shot.alt}
+        formats={['avif', 'webp']}
+        widths={widths.length ? widths : [image.width]}
+        sizes={sizes}
+        loading={eager ? 'eager' : 'lazy'}
+        decoding="async"
+      />
+    </div>
+  </div>
+  {
+    caption && (
+      <figcaption class="shot-caption">
+        <span class="shot-caption__title"><T text={shot.title} /></span>
+        {shot.mine && <span class="mine-tag">{shot.mine}</span>}
+        {shot.note && <span class="shot-caption__note"><T text={shot.note} /></span>}
+      </figcaption>
+    )
+  }
+</figure>

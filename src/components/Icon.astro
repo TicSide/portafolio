@@ -1,0 +1,17 @@
+---
+import { getIcon } from '@/lib/icons';
+interface Props {
+  name: string;
+}
+const icon = getIcon(Astro.props.name);
+---
+
+{
+  icon.kind === 'path' ? (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" class="icon-draw">
+      <path d={icon.d} />
+    </svg>
+  ) : (
+    <span class="glyph-text" aria-hidden="true">{icon.text}</span>
+  )
+}

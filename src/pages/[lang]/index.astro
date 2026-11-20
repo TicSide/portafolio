@@ -1,0 +1,714 @@
+---
+import { Picture } from 'astro:assets';
+import Base from '@/layouts/Base.astro';
+import T from '@/components/T.astro';
+import Shot from '@/components/Shot.astro';
+import Stat from '@/components/Stat.astro';
+import Icon from '@/components/Icon.astro';
+import Arrow from '@/components/Arrow.astro';
+import CodeWindow from '@/components/CodeWindow.astro';
+import ContactActions from '@/components/ContactActions.astro';
+import Reel from '@/components/Reel.astro';
+import { caseStudies, home } from '@/content';
+import { media, pixelArt } from '@/content/media';
+import type { Evidence } from '@/content/types';
+import { ui } from '@/i18n/ui';
+import { formatMonth, homePath, htmlLang, locales, projectPath, type Locale } from '@/i18n/utils';
+import { getRepos } from '@/lib/github';
+import { fitStyle } from '@/lib/fit';
+import { fitWidths } from '@/lib/images';
+import { site } from '@/config/site';
+
+export function getStaticPaths() {
+  return locales.map((lang) => ({ params: { lang } }));
+}
+
+const locale = Astro.params.lang as Locale;
+const c = home[locale];
+const t = ui[locale];
+const dy = c.denunciaya;
+const yu = c.yupachayna;
+const mo = c.motion;
+const ds = c.design;
+const studies = caseStudies[locale];
+const dyStudy = studies.find((s) => s.slug === 'denunciaya');
+const yuStudy = studies.find((s) => s.slug === 'yupachayna');
+const { repos, live } = await getRepos();
+const origin = Astro.site!;
+const numberLocale = htmlLang[locale];
+const es = locale === 'es';
+
+const workLabel = es ? 'Proyectos' : 'Projects';
+const workIntro = es
+  ? 'Dos casos grandes, los proyectos en equipo de mis cursos, motion graphics y diseño. Las imágenes y videos son del trabajo real.'
+  : 'Two major case studies, team projects from my courses, motion graphics and design. Every image and video comes from the real work.';
+const label = {
+  screens: es ? 'Pantallas de DenunciaYa' : 'DenunciaYa screens',
+  mineMore: es ? 'Ver lo que hice' : 'See what I did',
+  scenes: es ? 'Escenas de Yupachayña' : 'Yupachayña scenes',
+  swipe: es ? 'Desliza para ver más escenas' : 'Scroll for more scenes',
+};
+
+// Órbitas del stack: un ángulo por tecnología dentro de su anillo.
+const ringRadius: Record<Evidence, number> = { used: 27, base: 40, learning: 50 };
+const ringOffset: Record<Evidence, number> = { used: 0, base: 14, learning: 30 };
+const rings = (['used', 'base', 'learning'] as const).map((level) => {
+  const items = c.stack.items.filter((item) => item.level === level);
+  return {
+    level,
+    nodes: items.map((item, i) => ({ ...item, angle: ringOffset[level] + (360 / items.length) * i })),
+  };
+});
+
+// Más trabajo: los proyectos con imagen van a la cuadrícula; el resto, a una lista.
+const pieces = c.more.items.filter((item) => item.image);
+const notes = c.more.items.filter((item) => !item.image);
+
+const langColor: Record<string, string> = { Java: '#e89a4a', TypeScript: '#4a7fe8', 'C#': '#8a6be8', JavaScript: '#e8d44a' };
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: site.name,
+    url: new URL(homePath(locale), origin).href,
+    inLanguage: htmlLang[locale],
+    author: { '@id': new URL('/#person', origin).href },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    '@id': new URL('/#person', origin).href,
+    name: site.name,
+    alternateName: site.shortName,
+    url: new URL(homePath(locale), origin).href,
+    image: new URL(locale === 'en' ? '/og-en.jpg' : '/og.jpg', origin).href,
+    description: c.meta.description,
+    jobTitle: c.hero.kicker,
+    address: { '@type': 'PostalAddress', addressLocality: 'Lima', addressCountry: 'PE' },
+    affiliation: { '@type': 'CollegeOrUniversity', name: 'Universidad Peruana de Ciencias Aplicadas', url: 'https://www.upc.edu.pe/' },
+    knowsAbout: ['Java', 'Spring Boot', 'REST APIs', 'MySQL', 'Angular', 'TypeScript', 'Unity', 'C#', 'Figma', 'Motion graphics'],
+    knowsLanguage: ['es'],
+    sameAs: [site.github, site.itch, ...(site.linkedin ? [site.linkedin] : [])],
+  },
+];
+---
+
+<Base locale={locale} title={c.meta.title} description={c.meta.description} isHome jsonLd={jsonLd}>
+  <!-- Hero ---------------------------------------------------------------->
+  <section class="hero theme-dark" data-theme-section="dark" data-glass-host aria-labelledby="hero-title">
+    <canvas class="glass" data-glass="glass" aria-hidden="true"></canvas>
+    <div class="hero__veil" aria-hidden="true"></div>
+    <div class="wrap hero__inner">
+      <div class="hero__top">
+        <p class="kicker" data-hero-fade>{c.hero.kicker}</p>
+        <p class="status-pill" data-hero-fade><span class="status-pill__dot" aria-hidden="true"></span>{c.hero.status}</p>
+      </div>
+      <h1 class="hero__name" id="hero-title">
+        <span class="sr-only">{site.name}. {c.hero.kicker}.</span>
+        <span class="hero__line" aria-hidden="true">{[...'OMAR'].map((ch) => <span class="hero__char">{ch}</span>)}</span>
+        <span class="hero__line hero__line--2" aria-hidden="true">{[...'Rivera'].map((ch, i) => <span class="hero__char" style={`--i: ${i}`}>{ch}</span>)}</span>
+      </h1>
+      <div class="hero__bottom">
+        <div class="hero__copy">
+          <p class="hero__statement" data-hero-fade>{c.hero.statement}</p>
+          <p class="hero__meta mono" data-hero-fade>
+            <span>{c.hero.place}</span>
+            <span><span data-clock>--:--</span> {t.localTime}</span>
+          </p>
+        </div>
+        <div class="hero__cta" data-hero-fade>
+          <ul class="actions">
+            <li>
+              <a class="btn btn--solid" href="#trabajo" data-magnetic>
+                {c.hero.cta}
+                <span class="btn__icon"><Arrow /></span>
+              </a>
+            </li>
+            <li>
+              <a class="btn" href={site.github} rel="noopener noreferrer me" data-magnetic>
+                <span class="btn__icon"><Icon name="github" /></span>GitHub
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Marquesina ----------------------------------------------------------->
+  <div class="marquee" data-theme-section="dark" aria-hidden="true">
+    <div class="marquee__track">
+      {
+        [0, 1].map(() => (
+          <div class="marquee__group">
+            {c.marquee.map((word) => (
+              <>
+                <span class="marquee__word">{word}</span>
+                <span class="marquee__sep" />
+              </>
+            ))}
+          </div>
+        ))
+      }
+    </div>
+  </div>
+
+  <!-- Sobre mí ------------------------------------------------------------->
+  <section class="section section--tight" id="sobre-mi" data-theme-section="light" aria-labelledby="about-title">
+    <div class="wrap about">
+      <div class="portrait" data-reveal="image">
+        <Picture src={media.omar} alt={c.about.photoAlt} formats={['avif', 'webp']} widths={fitWidths(media.omar, [300, 500, 700])} sizes="(min-width: 64rem) 22rem, 60vw" />
+        <p class="portrait__tag mono"><span>{site.shortName}</span><span>{site.location}</span></p>
+      </div>
+      <div class="about__body">
+        <h2 class="kicker" id="about-title">{c.about.title}</h2>
+        <p class="statement about__statement">
+          <span class="sr-only">{c.about.statement}</span>
+          <span data-words aria-hidden="true">{c.about.statement}</span>
+        </p>
+        <div class="stats stats--four">
+          {c.about.stats.map((stat) => <Stat stat={stat} locale={numberLocale} />)}
+        </div>
+        <dl class="facts facts--inline">
+          {
+            c.about.facts.map((fact) => (
+              <div>
+                <dt>{fact.term}</dt>
+                <dd>
+                  <T text={fact.value} />
+                </dd>
+              </div>
+            ))
+          }
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <!-- Trabajo: DenunciaYa -------------------------------------------------->
+  <section class="section section--tight" id="trabajo" data-theme-section="dark" aria-labelledby="work-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 class="title-xl fit" id="work-title" data-split style={fitStyle(workLabel)}>{workLabel}</h2>
+        <p>{workIntro}</p>
+      </div>
+
+      <article class="case" aria-labelledby="dy-title">
+        <header class="case__head">
+          <div>
+            <p class="kicker">{dy.kicker}</p>
+            <h3 class="case__title" id="dy-title" data-split>DenunciaYa</h3>
+          </div>
+          <div class="case__intro">
+            <p class="lede">{dy.lede}</p>
+            <ul class="chips">{dyStudy?.stack.map((item) => <li class="chip">{item}</li>)}</ul>
+          </div>
+        </header>
+
+        <div class="tabs" data-tabs>
+          <div class="tabs__list" role="tablist" aria-label={label.screens}>
+            {
+              dy.shots.map((shot, i) => (
+                <button class:list={['tabs__tab', { 'is-active': i === 0 }]} type="button" role="tab" id={`dy-tab-${i}`} aria-controls={`dy-panel-${i}`} aria-selected={i === 0 ? 'true' : 'false'} tabindex={i === 0 ? 0 : -1}>
+                  <span class="tabs__title">{shot.title}</span>
+                  {shot.mine && <span class="mine-tag">{shot.mine}</span>}
+                </button>
+              ))
+            }
+          </div>
+          <div class="tabs__panels">
+            {
+              dy.shots.map((shot, i) => (
+                <div class:list={['tabs__panel', { 'is-active': i === 0 }]} role="tabpanel" id={`dy-panel-${i}`} aria-labelledby={`dy-tab-${i}`} data-cursor={t.viewImage}>
+                  <Shot shot={shot} sizes="(min-width: 64rem) 52rem, 92vw" caption={false} />
+                </div>
+              ))
+            }
+          </div>
+        </div>
+        <p class="note"><T text={dy.shotsNote} /> {t.mineLegend}</p>
+
+        <div class="case__grid">
+          <div class="case__block">
+            <h4 class="case__subtitle">{dy.architectureTitle}</h4>
+            <p class="muted case__small">{dy.architectureText}</p>
+            <ol class="layers" data-reveal="stagger">
+              {
+                dy.layers.map((layer) => (
+                  <li class:list={['layers__row', { 'layers__row--mine': layer.mine }]}>
+                    <span class="layers__name mono">{layer.name}</span>
+                    <span class="layers__note">{layer.note}</span>
+                    <span class="layers__items">{layer.items.join(', ')}</span>
+                  </li>
+                ))
+              }
+            </ol>
+          </div>
+          <div class="case__block">
+            <h4 class="case__subtitle">{dy.apiTitle}</h4>
+            <ol class="endpoints endpoints--compact" tabindex="0" aria-label={`${dy.endpoints.length} ${t.endpoints}`}>
+              {
+                dy.endpoints.map((endpoint) => (
+                  <li class="endpoint">
+                    <span class={`endpoint__method endpoint__method--${endpoint.method}`}>{endpoint.method}</span>
+                    <span class="endpoint__path">{endpoint.path.split('/').map((part, i) => (i === 0 ? part : <><wbr />/{part}</>))}</span>
+                  </li>
+                ))
+              }
+            </ol>
+          </div>
+          <div class="case__block case__block--code">
+            <CodeWindow excerpt={dy.code} linkLabel={t.viewCode} />
+          </div>
+        </div>
+
+        <div class="case__foot">
+          <div class="stats stats--inline">
+            {dy.stats.map((stat) => <Stat stat={stat} locale={numberLocale} />)}
+          </div>
+          <div class="split-credit split-credit--compact">
+            <div>
+              <h4>{t.myPart}</h4>
+              <ul class="credit-list">{dy.mine.map((item) => <li><T text={item} /></li>)}</ul>
+            </div>
+            <div>
+              <h4>{t.teamPart}</h4>
+              <ul class="credit-list credit-list--team">{dy.team.map((item) => <li><T text={item} /></li>)}</ul>
+            </div>
+          </div>
+          <div class="chapter-foot">
+            <a class="link-arrow" href={projectPath(locale, 'denunciaya')} data-magnetic>
+              <span class="link-arrow__circle"><Arrow /></span>
+              <span class="link-arrow__text">{t.readCase}<span class="sr-only">: DenunciaYa</span></span>
+            </a>
+            <ul class="chips">
+              {dyStudy?.links.slice(0, 2).map((link) => <li><a class="chip" href={link.href} rel="noopener noreferrer">{link.label}</a></li>)}
+            </ul>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- Yupachayña ----------------------------------------------------------->
+  <section class="section section--tight yupa theme-dark" data-theme-section="dark" data-glass-host aria-labelledby="yu-title">
+    <div class="yupa__bg" aria-hidden="true">
+      <canvas class="glass yupa__topo" data-glass="topo"></canvas>
+    </div>
+    <div class="wrap">
+      <article class="case" aria-labelledby="yu-title">
+        <header class="case__head">
+          <div>
+            <p class="kicker">{yu.kicker}</p>
+            <h3 class="case__title" id="yu-title" data-split>Yupachayña</h3>
+          </div>
+          <div class="case__intro">
+            <p class="lede">{yu.lede}</p>
+            <ul class="chips">{yuStudy?.stack.map((item) => <li class="chip">{item}</li>)}</ul>
+          </div>
+        </header>
+
+        <ul class="strip" aria-label={label.scenes} tabindex="0">
+          {
+            yu.frames.map((frame) => (
+              <li class="strip__item">
+                <figure>
+                  <div class:list={['strip__media', { pixel: pixelArt.has(frame.image) }]}>
+                    <Picture src={media[frame.image]} alt={frame.alt} formats={['avif', 'webp']} widths={fitWidths(media[frame.image], [480, 800])} sizes="(min-width: 64rem) 30rem, 80vw" />
+                  </div>
+                  <figcaption class="shot-caption">
+                    <span class="shot-caption__title">{frame.title}</span>
+                    {frame.mine && <span class="mine-tag">{frame.mine}</span>}
+                  </figcaption>
+                </figure>
+              </li>
+            ))
+          }
+        </ul>
+        <p class="note strip__hint" aria-hidden="true">← {label.swipe} →</p>
+
+        <div class="case__grid case__grid--two">
+          <div class="case__block case__block--code">
+            <CodeWindow excerpt={yu.code} linkLabel={t.viewCode} />
+          </div>
+          <div class="case__block">
+            <div class="stats stats--inline" style="margin-top: 0">
+              {yu.stats.map((stat) => <Stat stat={stat} locale={numberLocale} />)}
+            </div>
+            <div class="split-credit split-credit--compact">
+              <div>
+                <h4>{t.myPart}</h4>
+                <ul class="credit-list">{yu.mine.map((item) => <li><T text={item} /></li>)}</ul>
+              </div>
+              <div>
+                <h4>{t.teamPart}</h4>
+                <ul class="credit-list credit-list--team">{yu.team.map((item) => <li><T text={item} /></li>)}</ul>
+              </div>
+            </div>
+            <div class="chapter-foot">
+              <a class="link-arrow" href={projectPath(locale, 'yupachayna')} data-magnetic>
+                <span class="link-arrow__circle"><Arrow /></span>
+                <span class="link-arrow__text">{t.readCase}<span class="sr-only">: Yupachayña</span></span>
+              </a>
+              <a class="btn" href={yu.itch.href} rel="noopener noreferrer" data-magnetic>{yu.itch.label}</a>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- Equipos: proyectos en organizaciones ---------------------------------->
+  <section class="section section--tight orgs" id="equipos" data-theme-section="dark" aria-labelledby="orgs-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 class="title-xl fit" id="orgs-title" data-split style={fitStyle(c.orgs.title)}>{c.orgs.title}</h2>
+        <p>{c.orgs.intro}</p>
+      </div>
+      <div class="orgs__grid" data-reveal="stagger">
+        {
+          c.orgs.items.map((item, i) => (
+            <article class="org-card" style={`--accent: var(--${item.accent})`} aria-labelledby={`org-${i}`}>
+              {item.image && (
+                <div class:list={['org-card__media', `org-card__media--${item.name.toLowerCase()}`]} data-cursor={t.viewImage}>
+                  <Picture src={media[item.image]} alt={item.imageAlt ?? item.name} formats={['avif', 'webp']} widths={fitWidths(media[item.image], [400, 640, 900])} sizes="(min-width: 64rem) 28rem, 92vw" />
+                  {item.badges && (
+                    <ul class="org-card__badges" aria-hidden="true">
+                      {item.badges.map((badge) => <li class="mono">{badge}</li>)}
+                    </ul>
+                  )}
+                </div>
+              )}
+              <div class="org-card__body">
+                <p class="org-card__org mono">
+                  <span class="org-card__index">{String(i + 1).padStart(2, '0')}</span>
+                  <a href={item.orgUrl} rel="noopener noreferrer">{item.org}</a>
+                </p>
+                <h3 class="org-card__name" id={`org-${i}`}>{item.name}</h3>
+                <p class="org-card__kind">{item.kind} · <T text={item.period} /></p>
+                <p class="org-card__lede">{item.lede}</p>
+                <p class="org-card__role"><span>{t.myPart}:</span> <T text={item.role} /></p>
+                {item.stat && (
+                  <p class="org-card__stat">
+                    <span class="org-card__stat-value">{item.stat.value}</span> {item.stat.suffix} <span class="muted">{item.stat.label}</span>
+                  </p>
+                )}
+                <details class="org-card__details">
+                  <summary>{label.mineMore}</summary>
+                  <ul class="credit-list">{item.mine.map((line) => <li><T text={line} /></li>)}</ul>
+                  <p class="org-card__team"><span>{t.teamPart}:</span> {item.team.join(' · ')}</p>
+                </details>
+                <ul class="chips">{item.stack.map((tech) => <li class="chip chip--accent">{tech}</li>)}</ul>
+                <div class="org-card__links">
+                  {item.video && <Reel piece={{ slug: item.video, title: item.videoTitle ?? item.name, kind: item.name, duration: '2:19', accent: item.accent }} play={mo.play} inline />}
+                  {item.links.map((link) => (
+                    <a class="chip" href={link.href} rel="noopener noreferrer">
+                      {link.label}
+                      <span class="sr-only"> ({item.name})</span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Motion graphics ------------------------------------------------------>
+  <section class="section section--tight motion" id="motion" data-theme-section="ink" aria-labelledby="motion-title">
+    <div class="motion__glow" aria-hidden="true">
+      <span class="blob blob--pink"></span>
+      <span class="blob blob--lime"></span>
+      <span class="blob blob--violet"></span>
+    </div>
+    <div class="wrap">
+      <div class="section-head">
+        <h2 class="title-xl fit motion__title" id="motion-title" data-split style={fitStyle(mo.title)}>{mo.title}</h2>
+        <p>{mo.intro}</p>
+      </div>
+      <ul class="reels" data-reveal="stagger">
+        <li class="reels__item reels__item--featured"><Reel piece={mo.featured} play={mo.play} featured /></li>
+        {mo.items.map((piece) => <li class:list={['reels__item', { 'reels__item--tall': piece.vertical }]}><Reel piece={piece} play={mo.play} /></li>)}
+      </ul>
+    </div>
+    <div class="marquee marquee--motion" aria-hidden="true">
+      <div class="marquee__track">
+        {
+          [0, 1].map(() => (
+            <div class="marquee__group">
+              {[...mo.items, mo.featured].map((piece) => (
+                <>
+                  <span class="marquee__word" style={`--accent: var(--${piece.accent})`}>{piece.title}</span>
+                  <span class="marquee__sep" />
+                </>
+              ))}
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Diseño UI ------------------------------------------------------------>
+  <section class="section section--tight design" id="diseno" data-theme-section="cream" aria-labelledby="design-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 class="title-xl fit" id="design-title" data-split style={fitStyle(ds.title)}>{ds.title}</h2>
+        <p>{ds.intro}</p>
+      </div>
+      <div class="designs">
+        {
+          ds.items.map((item, i) => (
+            <article class:list={['design-card', `design-card--${i}`, { 'design-card--wide': item.wide }]} style={`--accent: var(--${item.accent})`} aria-labelledby={`design-${i}`}>
+              <div class="design-card__media" data-tilt data-cursor={t.viewImage}>
+                <div class="design-card__bar" aria-hidden="true">
+                  <span class="frame__dots"><span /><span /><span /></span>
+                  <span class="mono">figma · {item.name}</span>
+                </div>
+                <div class="design-card__img">
+                  <Picture src={media[item.image]} alt={item.alt} formats={['avif', 'webp']} widths={fitWidths(media[item.image], [400, 640, 960])} sizes={item.wide ? '(min-width: 64rem) 52rem, 92vw' : '(min-width: 64rem) 26rem, 92vw'} />
+                </div>
+              </div>
+              <div class="design-card__body">
+                <h3 class="design-card__name" id={`design-${i}`}>{item.name}</h3>
+                <p class="design-card__kind">{item.kind}</p>
+                <p class="design-card__text">{item.text}</p>
+                <ul class="chips">{item.tags.map((tag) => <li class="chip chip--accent">{tag}</li>)}</ul>
+              </div>
+            </article>
+          ))
+        }
+      </div>
+      <p class="note" style="margin-top: var(--s-5)">{ds.note}</p>
+    </div>
+  </section>
+
+  <!-- Más trabajo ----------------------------------------------------------->
+  <section class="section section--tight" data-theme-section="light" aria-labelledby="more-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 class="title-xl fit" id="more-title" data-split style={fitStyle(c.more.title)}>{c.more.title}</h2>
+        <p>{c.more.intro}</p>
+      </div>
+      <div class="cards" data-reveal="stagger">
+        {
+          pieces.map((item, i) => (
+            <article class:list={['card', { 'card--wide': i === 0 }]} aria-labelledby={`piece-${i}`}>
+              {item.image && (
+                <div class:list={['card__media', { pixel: pixelArt.has(item.image) }]} data-cursor={t.viewImage}>
+                  <Picture src={media[item.image]} alt={item.imageAlt ?? item.name} formats={['avif', 'webp']} widths={fitWidths(media[item.image], [400, 640, 960])} sizes={i === 0 ? '(min-width: 64rem) 40rem, 92vw' : '(min-width: 64rem) 20rem, 46vw'} />
+                </div>
+              )}
+              <div class="card__body">
+                <div class="card__head">
+                  <h3 class="card__name" id={`piece-${i}`}>{item.name}</h3>
+                  <span class="card__year"><T text={item.period} /></span>
+                </div>
+                <p class="card__meta">{item.kind}</p>
+                <p class="card__role"><T text={item.role} /></p>
+                {i === 0 && <p class="card__text"><T text={item.text} /></p>}
+                <ul class="piece__links">
+                  {item.links.map((link) => (
+                    <li>
+                      <a class="chip" href={link.href} rel="noopener noreferrer">
+                        {link.label}
+                        <span class="sr-only"> ({item.name})</span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </article>
+          ))
+        }
+        <a class="card card--cta" href={site.itch} rel="noopener noreferrer me">
+          <span class="card--cta__icon" aria-hidden="true"><Arrow /></span>
+          <span class="card--cta__text">{es ? 'Ver los 14 juegos en itch.io' : 'See all 14 games on itch.io'}</span>
+          <span class="card--cta__url mono">tic-side.itch.io</span>
+        </a>
+      </div>
+      {
+        notes.length > 0 && (
+          <ul class="also also--grid" data-reveal>
+            {notes.map((item) => (
+              <li class="also__item">
+                <h3 class="also__name">{item.name}</h3>
+                <p class="also__text">
+                  <span class="also__kind">{item.kind}.</span> <T text={item.text} />
+                </p>
+                <p class="also__role">
+                  <T text={item.role} /> · <T text={item.period} />
+                </p>
+                <p class="also__links">
+                  {item.links.map((link) => (
+                    <a class="chip" href={link.href} rel="noopener noreferrer">
+                      {link.label}
+                      <span class="sr-only"> ({item.name})</span>
+                    </a>
+                  ))}
+                </p>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+    </div>
+  </section>
+
+  <!-- Stack ---------------------------------------------------------------->
+  <section class="section section--tight" id="stack" data-theme-section="light" aria-labelledby="stack-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 class="title-xl fit" id="stack-title" data-split style={fitStyle(c.stack.title)}>{c.stack.title}</h2>
+        <p>{c.stack.intro}</p>
+      </div>
+      <div class="stack">
+        <div class="orbit" aria-hidden="true" data-draw>
+          <span class="orbit__ring orbit__ring--learning"></span>
+          <span class="orbit__ring orbit__ring--base"></span>
+          <span class="orbit__ring orbit__ring--used"></span>
+          {
+            rings.map((ring) => (
+              <div class={`orbit__spin orbit__spin--${ring.level}`}>
+                {ring.nodes.map((node) => (
+                  <span class="orbit__node" style={`--a: ${node.angle}deg; --radius: ${ringRadius[ring.level]}cqi`} title={node.name}>
+                    <span class:list={['orbit__icon', { 'orbit__icon--learning': ring.level === 'learning' }]}>
+                      <Icon name={node.icon} />
+                    </span>
+                  </span>
+                ))}
+              </div>
+            ))
+          }
+          <span class="orbit__core">Omar<br />Rivera</span>
+        </div>
+        <div class="levels" data-draw>
+          {
+            c.stack.levels.map((level) => (
+              <section class={`level level--${level.level}`} aria-labelledby={`level-${level.level}`}>
+                <div class="level__head">
+                  <span class="level__swatch" aria-hidden="true" />
+                  <h3 class="level__title" id={`level-${level.level}`}>{level.label}</h3>
+                </div>
+                <p class="level__text">{level.text}</p>
+                <ul class="tech-list">
+                  {c.stack.items
+                    .filter((item) => item.level === level.level)
+                    .map((item) => (
+                      <li class="tech">
+                        <span class="tech__icon">
+                          <Icon name={item.icon} />
+                        </span>
+                        {item.name}
+                      </li>
+                    ))}
+                </ul>
+              </section>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Trayectoria y repositorios -------------------------------------------->
+  <section class="section section--tight" id="trayectoria" data-theme-section="dark" aria-labelledby="journey-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 class="title-xl fit" id="journey-title" data-split style={fitStyle(c.journey.title)}>{c.journey.title}</h2>
+        <p>{c.journey.intro}</p>
+      </div>
+      <ol class="timeline" data-reveal="stagger">
+        {
+          c.journey.items.map((item) => (
+            <li class={`timeline__step timeline__step--${item.state}`}>
+              <span class="timeline__when mono">{item.when}</span>
+              <h3 class="timeline__title">{item.title}</h3>
+              <p class="timeline__text">{item.text}</p>
+              {item.state === 'planned' && <span class="chip timeline__tag">{t.status.planned}</span>}
+            </li>
+          ))
+        }
+      </ol>
+
+      <div class="journey__extra">
+        <div class="certs" data-reveal>
+          <h3>{c.journey.certsTitle}</h3>
+          <ul class="chips">
+            {c.journey.certs.map((cert) => <li class="chip" lang="en">{cert}</li>)}
+          </ul>
+        </div>
+        <div class="terminal" data-reveal aria-labelledby="repos-title">
+          <div class="terminal__bar mono">
+            <span class="frame__dots" aria-hidden="true"><span></span><span></span><span></span></span>
+            <h3 id="repos-title" class="terminal__title">~/github/{site.githubUser} · {c.github.title}</h3>
+          </div>
+          <ul>
+            {
+              repos.map((repo) => (
+                <li>
+                  <a class="repo" href={repo.url} rel="noopener noreferrer">
+                    <span class="repo__name">{repo.name}</span>
+                    <span class="repo__role">{c.github.roles[repo.key]}</span>
+                    <span class="repo__meta">
+                      <span class="lang-dot" style={`--c: ${langColor[repo.language] ?? 'var(--peri)'}`}>{repo.language}</span>
+                      <span>
+                        <span class="sr-only">{t.updated}: </span>
+                        <time datetime={repo.pushedAt}>{formatMonth(repo.pushedAt, locale)}</time>
+                      </span>
+                      {repo.stars > 0 && <span>{repo.stars} {t.stars}</span>}
+                    </span>
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+          <p class="note terminal__note">{live ? t.githubLive : t.githubSnapshot}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contacto ------------------------------------------------------------->
+  <section class="contact theme-dark" id="contacto" data-theme-section="dark" data-glass-host aria-labelledby="contact-title">
+    <canvas class="glass" data-glass="glass" aria-hidden="true"></canvas>
+    <div class="hero__veil" aria-hidden="true"></div>
+    <div class="wrap contact__inner">
+      <p class="kicker">{c.contact.kicker}</p>
+      <h2 class="contact__title fit" id="contact-title" style={fitStyle(c.contact.title)}>
+        <span class="sr-only">{c.contact.title}</span>
+        <span aria-hidden="true">
+          {
+            c.contact.title.split(' ').map((word, i) => (
+              <>
+                {i > 0 && ' '}
+                <span class="contact__word">{[...word].map((ch) => <span class="contact__char">{ch}</span>)}</span>
+              </>
+            ))
+          }
+        </span>
+      </h2>
+      <p class="contact__text">{c.contact.text}</p>
+      <ContactActions locale={locale} full />
+      <p class="hero__meta mono">
+        <span>{site.location}</span>
+        <span><span data-clock>--:--</span> {t.localTime}</span>
+      </p>
+    </div>
+  </section>
+
+  <dialog class="player" aria-labelledby="player-title">
+    <div class="player__box">
+      <div class="player__head">
+        <p class="player__title" id="player-title"></p>
+        <button class="player__close" type="button" data-player-close aria-label={mo.close}>
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      <video class="player__video" controls playsinline preload="none"></video>
+    </div>
+  </dialog>
+</Base>
